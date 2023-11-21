@@ -3,8 +3,6 @@
 
 This Arduino library has Mbed ENC28J60-EMAC driver from here: https://os.mbed.com/users/hudakz/code/ENC28J60-EMAC/. Only difference is a major fix of `ENC28J60_EMAC::link_out` and added `using namespace` required for ArduinoMbed-core.
 
-The library is not extensively tested. It was created for now as proof of concept for external Mbed EMAC driver with ArduinoMbed-Core. Only Nano 33 BLE was tested.
-
 To use it with Mbed Nano boards Ethernet library and SocketWrapper have to be copied from Mbed Portenta boards package. For Giga R1, Ethernet library has to be copied.
 
 Two small fixes are required in Mbed-core libraries:
@@ -17,5 +15,5 @@ The Nano ENC28J60 Ethernet shield can be used with the 3.3V Nanos but only with 
 
 Next to board.txt create boards.local.txt with a line for your board, to define the SPI pins as Mbed PinName. Example for Nano 33 BLE:
 ```
-nano33ble.build.extra_flags=-DENC28J60_MOSI=p1 -DENC28J60_MISO=p8 -DENC28J60_SCK=p13 -DENC28J60_CS=p2
+nano33ble.build.extra_flags=-DENC28J60_MOSI=SPIS_PSELMOSI -DENC28J60_MISO=SPIS_PSELMISO -DENC28J60_SCK=SPIS_PSELSCK -DENC28J60_CS=SPIS_PSELSS
 ``` 

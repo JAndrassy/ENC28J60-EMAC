@@ -57,8 +57,15 @@ emac_mem_buf_t* ENC28J60_EMAC::low_level_input()
     }
 
     // Allocate a buffer chain from the memory pool.
-    chain = _memory_manager->alloc_pool(packet.payload.len, ENC28J60_BUFF_ALIGNMENT);
+//    chain = _memory_manager->alloc_pool(packet.payload.len, ENC28J60_BUFF_ALIGNMENT);
+//    if (chain == NULL) {
+      chain = _memory_manager->alloc_heap(packet.payload.len, ENC28J60_BUFF_ALIGNMENT);
+//    }
     buf = chain;
+    if (buf == NULL) {
+      _enc28j60->abortPacketRead(packet.addr);
+      return NULL;
+    }
 
     // Iterate through the buffer chain and fill it with packet payload.
     while (buf != NULL) {
@@ -70,6 +77,7 @@ emac_mem_buf_t* ENC28J60_EMAC::low_level_input()
 
         buf = _memory_manager->get_next(buf);
     }
+    _enc28j60->freeRxBuffer();  // make room in ENC28J60 receive buffer for new packets
 
     // Return the buffer chain filled with packet payload.
     return chain;
@@ -90,11 +98,9 @@ void ENC28J60_EMAC::receive_task()
     if (payload != NULL) {
         if (_emac_link_input_cb) {
             _emac_link_input_cb(payload);   // pass packet payload to the ethernet stack
-            _memory_manager->free(payload);
         }
     }
-
-    _enc28j60->freeRxBuffer();  // make room in ENC28J60 receive buffer for new packets
+    
     _ethLockMutex.unlock();
 }
 
@@ -141,7 +147,6 @@ bool ENC28J60_EMAC::link_out(emac_mem_buf_t* buf)
 
     error = _enc28j60->transmitPacket(packetLen);
     if (error != ENC28J60_ERROR_OK) {
-        _memory_manager->free(chain);
         _ethLockMutex.unlock();
         return false;
     }

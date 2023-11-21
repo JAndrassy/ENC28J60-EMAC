@@ -41,7 +41,7 @@ typedef struct
 
 typedef struct
 {
-    uint32_t    addr;
+    uint16_t    addr;
     payload_t   payload;
 } packet_t;
 
@@ -204,6 +204,7 @@ public:
      */
     enc28j60_error_t    setRxBufReadPtr(uint16_t position);
     enc28j60_error_t    getPacketInfo(packet_t* packet);
+    void                abortPacketRead(uint16_t addr);
     void                readPacket(packet_t* packet);
     void                freeRxBuffer(void);
     uint16_t            getRecvPointer(void);
@@ -231,6 +232,6 @@ private:
     DigitalOut  _cs;
     uint8_t     _bank;
     bool        _ready;
-    uint32_t    _next;
+    uint16_t    _next;
 };
 #endif /* ENC28J60_ETH_DRV_H_ */

@@ -29,7 +29,7 @@
 #define ENC28J60_DEBUG_PRINTF(...)
 #endif
 /** Millisec timeout macros */
-#define RESET_TIME_OUT_MS       10ms
+#define RESET_TIME_OUT_MS       50ms
 #define REG_WRITE_TIME_OUT_MS   50ms
 #define PHY_RESET_TIME_OUT_MS   100ms
 #define INIT_FINISH_DELAY       2000ms
@@ -242,10 +242,12 @@ enc28j60_error_t ENC28J60::getPacketInfo(packet_t* packet)
         ret = ENC28J60_ERROR_RECEIVE;
     }
 
-    // Decrement the packet counter to indicate we are done with this packet.
-    writeOp(ENC28J60_BIT_FIELD_SET, ECON2, ECON2_PKTDEC);
-
     return ret;
+}
+
+void ENC28J60::abortPacketRead(uint16_t addr) {
+  _next = addr;
+  _ready = true;
 }
 
 /**
@@ -292,6 +294,9 @@ void ENC28J60::freeRxBuffer(void)
         writeRegPair(ERXRDPTL, ERXND_INI);
     else
         writeRegPair(ERXRDPTL, _next - 1);
+
+    // Decrement the packet counter to indicate we are done with this packet.
+    writeOp(ENC28J60_BIT_FIELD_SET, ECON2, ECON2_PKTDEC);
 
     _ready = true;  // ready for next packet
 }
@@ -593,7 +598,6 @@ uint16_t ENC28J60::getWritePointer(void)
 void ENC28J60::readBuf(uint8_t* data, uint16_t len)
 {
     _read(ENC28J60_READ_BUF_MEM, data, len, false);
-    data[len] = '\0';
 }
 
 /**
